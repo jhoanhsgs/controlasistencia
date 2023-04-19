@@ -1,0 +1,271 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
+package controlador;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import modelo.Asistencia;
+import modelo.AsistenciaDAO;
+import modelo.Ficha;
+import modelo.FichaDAO;
+import modelo.Personas;
+import modelo.PersonasDAO;
+import modelo.fichas;
+import modelo.AsignarAprendiz;
+import modelo.AsignarAprendizDAO;
+/**
+ *
+ * @author jhoan
+ */
+public class controlador extends HttpServlet {
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    //personas
+    Personas pm=new Personas();
+    PersonasDAO pdao=new PersonasDAO();
+    int ida;
+    //ficha
+    Ficha fc=new Ficha();
+    FichaDAO fdao=new FichaDAO();
+    Asistencia Am=new Asistencia();
+    AsistenciaDAO Adao=new AsistenciaDAO();
+    AsignarAprendiz AsAp=new AsignarAprendiz();
+    AsignarAprendizDAO AsApdao=new AsignarAprendizDAO();
+    
+    
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+            //este menu recibe y nos ejectura la accion de ver los datos en la tabla 
+            //ni yo entendi lo que escribi pero se como es
+            String menu=request.getParameter("menu");
+            String accion=request.getParameter("accion");
+            if(menu.equals("principal")){
+                request.getRequestDispatcher("principal.jsp").forward(request, response);
+            }
+            if(menu.equals("Ficha")){
+                switch (accion) {
+                    case "listarFicha":
+                        List lista1=fdao.listar();
+                        List pmList = fdao.programas();
+
+                        request.setAttribute("fichas", lista1);
+                        request.setAttribute("programas", pmList);
+                        break;
+                    case "Agregar":
+                        Ficha nFicha = new Ficha();
+
+                        String numFicha=request.getParameter("txtNFicha");
+                        
+                        String fechaIni=request.getParameter("txtFechaIni");
+                        String fechaFin=request.getParameter("txtFechaFin");
+                        String programa=request.getParameter("program");
+
+                        
+                        nFicha.setNficha(numFicha);
+                        nFicha.setFechaI(fechaIni);
+                        nFicha.setFechaF(fechaFin);
+                        nFicha.setIdprogformacion(programa);
+
+                      
+                        fdao.agregar(nFicha);
+                        request.getRequestDispatcher("controlador?menu=Ficha&accion=listarFicha").forward(request, response);
+                        
+                        break;             
+                    case "Editar":
+                        ida=Integer.parseInt(request.getParameter("id"));
+                        Ficha e=fdao.listar(ida);
+                        request.setAttribute("ficha", e);
+                        request.getRequestDispatcher("controlador?menu=Ficha&accion=listarFicha").forward(request, response);
+                        break;
+                    case "Eliminar":
+                        ida=Integer.parseInt(request.getParameter("id"));//captura el id de la fila para todo
+                        fdao.eliminar(ida);//ejecutamos el metodo eliminar dentro de la clase personasdao
+                        //listar datos actualizados
+                        request.getRequestDispatcher("controlador?menu=Ficha&accion=listarFicha").forward(request, response);
+                        break;
+                     case "Actualizar":
+                        String Cedula1=request.getParameter("txtCedula");
+                        String Nombre1=request.getParameter("txtNombre");
+                        String Apellido1=request.getParameter("txtApellido");
+                        String Email1=request.getParameter("txtEmail");
+                        String IDuser1=request.getParameter("txtIDusuario");
+                        String IDRol1=request.getParameter("txtIDRol");
+                        
+                        
+                        fc.setNombre(Nombre1);
+                        pdao.Actualizar(pm);
+                        request.getRequestDispatcher("controlador?menu=Aprendiz&accion=Listar").forward(request, response);
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+               request.getRequestDispatcher("Ficha.jsp").forward(request, response);
+            }
+            if(menu.equals("Aprendiz")){
+                switch (accion) {
+                    case "Listar":
+                        List lista=pdao.listar();
+                        List pmRol=pdao.rol();
+                        request.setAttribute("aprendiz", lista);
+                        request.setAttribute("RolPersona", pmRol);
+                        request.setAttribute("cont", 0);
+                        
+                        
+                        break;
+                    case "Agregar":
+                         Personas nPersona = new Personas();
+
+                        String cedula=request.getParameter("txtCedula");
+                        String nombre=request.getParameter("txtNombre");
+                        String apellido=request.getParameter("txtApellido");
+                        String email=request.getParameter("txtEmail");
+                        String IDRol=request.getParameter("rl");
+                        String IDExcusa=request.getParameter("txtExcusa");
+                        
+                        nPersona.setcedula(cedula);
+                        nPersona.setNombre(nombre);
+                        nPersona.setapellido(apellido);
+                        nPersona.setemail(email);
+                        nPersona.setIdrol(email);
+
+                        
+                        nPersona.setIdrol(IDRol);
+                        if(IDExcusa.length() > 0) pm.setIdexcusa(IDExcusa);
+                        
+                        
+
+                        pdao.agregar(nPersona);
+                        
+
+                        request.getRequestDispatcher("controlador?menu=Aprendiz&accion=Listar").forward(request, response);
+                        break;
+                    case "Editar":
+                        ida=Integer.parseInt(request.getParameter("id"));
+                        Personas e=pdao.listarId(ida);
+                        request.setAttribute("Personas", e);
+                        request.getRequestDispatcher("controlador?menu=Aprendiz&accion=Listar").forward(request, response);
+                        break;
+                    case "Actualizar":
+                        String Cedula1=request.getParameter("txtCedula");
+                        String Nombre1=request.getParameter("txtNombre");
+                        String Apellido1=request.getParameter("txtApellido");
+                        String Email1=request.getParameter("txtEmail");
+                        String IDuser1=request.getParameter("txtIDusuario");
+                        String IDRol1=request.getParameter("rl");
+                        
+                        pm.setcedula(Cedula1);
+                        pm.setNombre(Nombre1);
+                        pm.setapellido(Apellido1);
+                        pm.setemail(Email1);
+                        pm.setIduser(IDuser1);
+                        pm.setIdrol(IDRol1);
+                        pm.setId(ida);
+                        pdao.Actualizar(pm);
+                        request.getRequestDispatcher("controlador?menu=Aprendiz&accion=Listar").forward(request, response);
+                        break;
+                    case "Eliminar":
+                       
+                        ida=Integer.parseInt(request.getParameter("id"));//captura el id de la fila para todo
+                        pdao.eliminar(ida);//ejecutamos el metodo eliminar dentro de la clase personasdao
+                        //listar datos actualizados
+                        request.getRequestDispatcher("controlador?menu=Aprendiz&accion=Listar").forward(request, response);
+                        break;   
+                    default:
+                        throw new AssertionError();
+                }
+               request.getRequestDispatcher("Aprendiz.jsp").forward(request, response);
+            }
+            if(menu.equals("Instructor")){
+               request.getRequestDispatcher("Instructor.jsp").forward(request, response);
+            }
+            if(menu.equals("R_Asistencia")){
+                switch (accion) {
+                    case "Asistencia":
+                        List asistencia = Adao.llenar();
+                        List fichas=AsApdao.ficha();
+                        request.setAttribute("asistencia", asistencia);
+                        request.setAttribute("RolPersona", fichas);
+                        break;
+                }
+               request.getRequestDispatcher("R_Asistencia.jsp").forward(request, response);
+            }
+            if(menu.equals("Home")){
+               request.getRequestDispatcher("Home.jsp").forward(request, response);
+            }
+            if(menu.equals("AsignarAprendiz")){
+                switch (accion) {
+                    case "AsignarAprendiz":
+                        List  AsignarAprendiz= AsApdao.ListarApendiz1();
+                        List fichas=AsApdao.ficha();
+                        
+                        request.setAttribute("AsignarAprendiz3", AsignarAprendiz);
+                        request.setAttribute("Fichas", fichas);
+                        System.out.println("controlador.controlador.processRequest()");
+                        
+                        break;
+                        
+                        
+                         default:
+                        throw new AssertionError();
+                }
+               request.getRequestDispatcher("AsignarAprendiz.jsp").forward(request, response);
+            }
+            
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
